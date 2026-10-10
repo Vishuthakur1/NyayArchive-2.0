@@ -667,7 +667,7 @@ function showScanner(mode = "track") {
   } else if (!qrDetectionAvailable) {
     statusMessage = "This browser does not support QR scanning inside the app. Use a supported browser or enter the file ID below.";
   }
-  $("#modalBox").innerHTML = `<div class="modal-title"><div><p class="eyebrow">FILE LOOKUP</p><h2 id="modalTitle">Scan a file QR code</h2><p>Scan while signed in as the station owner. The scan updates the file’s station and holder; skipped stations alert the previous station staff member. Allow camera access or enter the file ID manually.</p></div><button class="icon-button" data-close aria-label="Close">×</button></div>
+  $("#modalBox").innerHTML = `<div class="modal-title"><div><p class="eyebrow">FILE LOOKUP</p><h2 id="modalTitle">Scan a file QR code</h2><p>Scan while signed in as the expected next station owner. Out-of-order scans are blocked and an alert is sent to the previous station staff member. Allow camera access or enter the file ID manually.</p></div><button class="icon-button" data-close aria-label="Close">×</button></div>
     <video class="scanner-video" id="scanVideo" autoplay muted playsinline aria-label="Camera preview"></video><p class="scan-status" id="scanStatus">${esc(statusMessage)}</p>
     <div class="modal-actions"><button class="btn btn-primary" id="startCamera" type="button"${cameraCanStart ? "" : " disabled"}>Start camera</button></div>
     <form class="scan-manual" id="manualScan"><div><label for="scanId">Enter file ID</label><input id="scanId" placeholder="e.g. NA-2026-001" required></div><button class="btn btn-outline" type="submit">Look up</button></form>`;

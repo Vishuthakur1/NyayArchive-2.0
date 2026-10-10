@@ -571,6 +571,7 @@ app.post("/api/files/:id/scans", route(async (req, res) => {
   }
   const stationIndex = fileStations.findIndex(item => item.key === station.key);
   const connection = await pool.getConnection();
+  let blockedMessage = null;
   try {
     await connection.beginTransaction();
     const [files] = await connection.execute(
@@ -590,20 +591,15 @@ app.post("/api/files/:id/scans", route(async (req, res) => {
     const previousStationIndex = previousScans.length
       ? fileStations.findIndex(item => item.key === previousScans[0].station_key)
       : -1;
-    const skippedStations = [];
-    if (previousStationIndex === -1) {
-      skippedStations.push(...fileStations.slice(0, stationIndex));
-    } else {
-      const stationDistance = (stationIndex - previousStationIndex + fileStations.length) % fileStations.length;
-      for (let step = 1; step < stationDistance; step += 1) {
-        skippedStations.push(fileStations[(previousStationIndex + step) % fileStations.length]);
-      }
-    }
-    let notificationRecipientId = null;
-    if (skippedStations.length) {
-      if (previousScans.length) {
-        notificationRecipientId = previousScans[0].scanned_by_admin_id;
-      } else {
+    const expectedStationIndex = previousStationIndex === -1
+      ? 0
+      : (previousStationIndex + 1) % fileStations.length;
+    if (stationIndex !== expectedStationIndex) {
+      const expectedStation = fileStations[expectedStationIndex];
+      let notificationRecipientId = previousScans.length
+        ? previousScans[0].scanned_by_admin_id
+        : null;
+      if (!notificationRecipientId) {
         const [recordRoomOwners] = await connection.execute(
           "SELECT admin_id FROM administrators WHERE role = 'Staff' AND LOWER(display_name) = LOWER(?) LIMIT 1",
           [fileStations[0].officer]
@@ -614,38 +610,40 @@ app.post("/api/files/:id/scans", route(async (req, res) => {
         await connection.rollback();
         return res.status(409).json({ error: "The previous station's staff account is unavailable, so the missed-station alert cannot be delivered. Ask an administrator to restore that account and retry." });
       }
-    }
-    await connection.execute(
-      `INSERT INTO file_scan_events
-        (file_record_id, scanned_by, scanned_by_admin_id, holder_at_scan, station_key)
-       VALUES (?, ?, ?, ?, ?)`,
-      [files[0].record_id, req.user.name, req.userId, files[0].assigned_officer, station.key]
-    );
-    await connection.execute(
-      "UPDATE court_files SET current_location = ?, assigned_officer = ? WHERE record_id = ?",
-      [station.location, station.officer, files[0].record_id]
-    );
-    await connection.execute(
-      `INSERT INTO file_movements
-        (file_record_id, from_location, to_location, status, officer, received_by, action, notes)
-       VALUES (?, ?, ?, ?, ?, ?, 'Station QR scan', '')`,
-      [files[0].record_id, files[0].current_location, station.location, files[0].status, req.user.name, station.officer]
-    );
-    if (skippedStations.length) {
-      const skippedNames = skippedStations.map(item => `${item.location} (${item.officer})`).join(", ");
-      const message = `${req.params.id} was scanned at ${station.location} by ${station.officer}, but the required scan was missed at: ${skippedNames}.`;
+      const message = `${req.params.id}: scan blocked at ${station.location} (${station.officer}). The required scan at ${expectedStation.location} (${expectedStation.officer}) has not happened.`;
       await connection.execute(
         "INSERT INTO file_notifications (recipient_admin_id, file_record_id, message) VALUES (?, ?, ?)",
         [notificationRecipientId, files[0].record_id, message]
       );
+      await connection.commit();
+      blockedMessage = `Scan blocked: ${expectedStation.location} (${expectedStation.officer}) must scan this file next. An alert was sent to the previous station.`;
     }
-    await connection.commit();
+    if (!blockedMessage) {
+      await connection.execute(
+        `INSERT INTO file_scan_events
+          (file_record_id, scanned_by, scanned_by_admin_id, holder_at_scan, station_key)
+         VALUES (?, ?, ?, ?, ?)`,
+        [files[0].record_id, req.user.name, req.userId, files[0].assigned_officer, station.key]
+      );
+      await connection.execute(
+        "UPDATE court_files SET current_location = ?, assigned_officer = ? WHERE record_id = ?",
+        [station.location, station.officer, files[0].record_id]
+      );
+      await connection.execute(
+        `INSERT INTO file_movements
+          (file_record_id, from_location, to_location, status, officer, received_by, action, notes)
+         VALUES (?, ?, ?, ?, ?, ?, 'Station QR scan', '')`,
+        [files[0].record_id, files[0].current_location, station.location, files[0].status, req.user.name, station.officer]
+      );
+      await connection.commit();
+    }
   } catch (error) {
     await connection.rollback();
     throw error;
   } finally {
     connection.release();
   }
+  if (blockedMessage) return res.status(409).json({ error: blockedMessage });
   res.status(201).json({ ok: true });
 }));
 
