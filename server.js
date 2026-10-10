@@ -979,7 +979,7 @@ async function startServer() {
 
 if (require.main === module) {
   startServer().catch(async error => {
-    console.error("NyayArchive could not start:", error.message);
+    console.error("NyayArchive could not start:", error);
     try {
       await closeDatabasePool();
     } catch (closeError) {
