@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123d7a">
+  <meta name="description" content="NyayArchive 2.0 is a fictional court-file tracking prototype for a college hackathon.">
+  <title>NyayArchive 2.0 — File movement, made clear</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="NyayArchive dashboard">
+      <img class="brand-mark" src="logo.jpeg" alt="NyayArchive logo">
+      <span><strong>NyayArchive <em>2.0</em></strong><small>FILE TRACKING SYSTEM</small></span>
+    </a>
+    <div class="topbar-right">
+      <span class="demo-pill"><span></span> Demo environment</span>
+      <button class="notification-button" id="notificationsOpen" type="button" hidden aria-label="Open alerts">Alerts <span id="notificationBadge" hidden></span></button>
+      <button class="user-button" id="loginOpen" type="button">
+        <span class="avatar" id="userAvatar">G</span>
+        <span class="user-copy"><b id="userName">Sign in required</b><small id="userRole">Administrator account</small></span>
+        <span aria-hidden="true">⌄</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <p class="nav-label">WORKSPACE</p>
+      <nav id="nav" aria-label="Main navigation">
+        <button data-page="dashboard" class="active"><span class="nav-icon">▦</span>Overview</button>
+        <button data-page="add"><span class="nav-icon">＋</span>Register a file</button>
+        <button data-page="search"><span class="nav-icon">⌕</span>Search files</button>
+        <button data-page="track"><span class="nav-icon">⌖</span>Track & hand over</button>
+        <button data-page="history"><span class="nav-icon">◷</span>Movement history</button>
+      </nav>
+      <div class="sidebar-note">
+        <div class="note-icon">i</div>
+        <div><b>Hackathon prototype</b><p>Fictional demo records only. Not connected to a real court system.</p></div>
+      </div>
+      <div class="sidebar-footer"><span class="status-dot"></span> Administrator workspace</div>
+    </aside>
+
+    <main>
+      <div class="page-heading">
+        <div><p class="eyebrow">NYAYARCHIVE / DIGITAL RECORDS</p><h1 id="pageTitle">Overview</h1></div>
+        <button class="btn btn-primary" id="newFileBtn" type="button"><span>＋</span> Register new file</button>
+      </div>
+
+      <section class="page active" id="page-dashboard">
+        <div class="welcome">
+          <div><span class="welcome-kicker">RECORDS AT A GLANCE</span><h2>A clearer view of every file.</h2><p>Follow case files from the registry to their current location.</p></div>
+          <div class="welcome-art" aria-hidden="true"><span class="art-ring"></span><span class="art-file">▤</span></div>
+        </div>
+        <div id="dashboardMsg" class="msg" role="status"></div>
+        <div class="stats">
+          <article class="stat"><span class="stat-icon blue">▤</span><span class="stat-label">Total files</span><b id="s-total">0</b><small>Registered in the configured database</small></article>
+          <article class="stat"><span class="stat-icon green">✓</span><span class="stat-label">In court</span><b id="s-court">0</b><small>Currently at a court location</small></article>
+          <article class="stat"><span class="stat-icon violet">▣</span><span class="stat-label">In archive</span><b id="s-arch">0</b><small>Safely stored in records</small></article>
+          <article class="stat"><span class="stat-icon amber">⇄</span><span class="stat-label">In movement</span><b id="s-move">0</b><small>Between locations</small></article>
+          <article class="stat"><span class="stat-icon red">!</span><span class="stat-label">Needs attention</span><b id="s-missing">0</b><small>Marked missing in the demo</small></article>
+        </div>
+        <div class="content-grid">
+          <section class="panel quick-panel">
+            <div class="panel-heading"><div><p class="eyebrow">FIND A RECORD</p><h3>Quick search</h3></div><span class="panel-icon">⌕</span></div>
+            <p class="panel-subtitle">Search by file ID, case number, location or officer.</p>
+            <div class="search-control"><span aria-hidden="true">⌕</span><input id="quick" aria-label="Quick search" placeholder="Try NA-2026-001"><button class="btn btn-primary" id="quickBtn" type="button">Search</button></div>
+            <div class="quick-actions"><button type="button" id="openScanner"><span>▦</span> Scan a QR code to see file details</button><button type="button" id="quickHistory"><span>◷</span> View latest activity</button></div>
+          </section>
+          <section class="panel activity-panel"><div class="panel-heading"><div><p class="eyebrow">LATEST UPDATES</p><h3>Recent activity</h3></div><button class="text-link" id="allHistory" type="button">View history <span>→</span></button></div><div id="recent" class="timeline compact"></div></section>
+        </div>
+      </section>
+
+      <section class="page" id="page-add">
+        <div class="section-intro"><span class="section-icon">＋</span><div><p class="eyebrow">NEW RECORD</p><h2>Register a court file</h2><p>Add a fictional demo record to the archive.</p></div></div>
+        <div class="panel lookup-panel" style="margin-bottom:14px;">
+          <div class="lookup-copy"><span class="eyebrow">FILE LOOKUP</span><p>Scan a QR code or enter a file ID to view the full details of an existing record.</p></div>
+          <div class="row lookup-row">
+            <div class="grow"><label for="registerLookupId">File ID</label><input id="registerLookupId" placeholder="e.g. NA-2026-001"></div>
+            <button class="btn btn-primary" id="registerLookupBtn" type="button">View details</button>
+            <button class="btn btn-outline" id="registerScanBtn" type="button"><span>▦</span> Scan QR</button>
+          </div>
+          <div id="registerLookupMsg" class="msg" role="status"></div>
+          <div id="registerDetails"></div>
+        </div>
+        <div class="panel form-panel"><div id="addMsg" class="msg" role="status"></div>
+          <form id="addForm">
+            <div class="form-section"><h3>Case information</h3><p>Fields marked with <span class="required">*</span> are required.</p>
+              <div class="form-grid">
+                <div class="field"><label for="caseNo">Case number <span class="required">*</span></label><input id="caseNo" name="caseNo" maxlength="255" required placeholder="e.g. CS/118/2026"></div>
+                <div class="field"><label for="fileId">Unique file ID</label><div class="id-field"><input id="fileId" name="id" readonly aria-describedby="idHint"><span class="id-lock">AUTO</span></div><small class="field-hint" id="idHint">Generated when this record is saved.</small></div>
+                <div class="field"><label for="caseType">Case type <span class="required">*</span></label><select id="caseType" name="type" required><option value="Civil">Civil</option><option value="Criminal">Criminal</option><option value="Family">Family</option><option value="Property">Property</option><option value="Commercial">Commercial</option><option value="Other">Other</option></select></div>
+                <div class="field"><label for="caseYear">Case year <span class="required">*</span></label><input id="caseYear" name="year" type="number" min="1900" max="2100" required></div>
+                <div class="field"><label for="location">Starting location <span class="required">*</span></label><input id="location" name="location" maxlength="255" required placeholder="e.g. Central Record Room"></div>
+                <div class="field"><label for="status">File status <span class="required">*</span></label><select id="status" name="status" required><option value="Stored">Stored</option><option value="In Court">In Court</option><option value="In Movement">In Movement</option><option value="Missing">Missing</option></select></div>
+                <div class="field"><label for="officer">Initial assigned lawyer / officer <span class="required">*</span></label><input id="officer" name="officer" maxlength="255" required placeholder="Name of the first file holder"></div>
+                <div class="field"><label for="fileDate">File date <span class="required">*</span></label><input id="fileDate" name="date" type="date" required></div>
+              </div>
+              <div class="field description-field"><label for="description">Case summary <span class="optional">OPTIONAL</span></label><textarea id="description" name="desc" rows="3" maxlength="2000" placeholder="Briefly summarize this fictional demo case"></textarea></div>
+              <div class="field description-field"><label for="documents">Documents inside the file <span class="optional">OPTIONAL</span></label><textarea id="documents" name="documents" rows="4" maxlength="5000" placeholder="Enter one document per line, e.g.&#10;Petition&#10;Court order&#10;Evidence list"></textarea><small class="field-hint">Enter each included document on a separate line.</small></div>
+            </div>
+            <div class="form-actions"><span class="secure-note"><span>✓</span> Saved to the configured database</span><button class="btn btn-primary" type="submit">Save court file <span>→</span></button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="page" id="page-search">
+        <div class="section-intro"><span class="section-icon">⌕</span><div><p class="eyebrow">RECORD DIRECTORY</p><h2>Search files</h2><p>Find a file and see where it is now.</p></div></div>
+        <div id="searchMsg" class="msg" role="status"></div>
+        <section class="panel table-panel"><div class="table-toolbar"><div><h3>All court files</h3><p id="searchCount">Loading records…</p></div><div class="table-search"><span>⌕</span><input id="searchBox" aria-label="Search court files" placeholder="Search ID, case, location or holder"></div></div>
+          <div class="table-wrap"><table><thead><tr><th>FILE ID</th><th>CASE</th><th>TYPE</th><th>CURRENT LOCATION</th><th>STATUS</th><th>CURRENT HOLDER</th><th></th></tr></thead><tbody id="fileRows"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="page" id="page-track">
+        <div class="section-intro"><span class="section-icon">⌖</span><div><p class="eyebrow">FILE MOVEMENT</p><h2>Track & hand over</h2><p>Look up a record, review its location and log a handover.</p></div></div>
+        <div class="panel lookup-panel"><div class="lookup-copy"><span class="eyebrow">LOOK UP A RECORD</span><p>Scan at the assigned station to update the file location. Route: Record Room → Clerk → Courtroom → Judge’s Office → Record Room. Skipped stations alert the previous station in the app.</p></div><div class="row lookup-row"><div class="grow"><label for="trackId">Unique file ID</label><input id="trackId" placeholder="e.g. NA-2026-001"></div><button class="btn btn-primary" id="trackBtn" type="button">Find file <span>→</span></button><button class="btn btn-outline" id="scanTrack" type="button"><span>▦</span> Scan QR</button></div></div>
+        <div id="trackMsg" class="msg" role="status"></div><div id="trackOut"></div>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="section-intro"><span class="section-icon">◷</span><div><p class="eyebrow">AUDIT TRAIL</p><h2>Movement history</h2><p>A timestamped record of every file registration and handover.</p></div></div>
+        <div id="historyMsg" class="msg" role="status"></div>
+        <section class="panel history-panel"><div class="panel-heading"><div><h3>All file activity</h3><p class="panel-subtitle">Newest activity appears first.</p></div><span class="history-total" id="historyCount">0 events</span></div><div id="histList" class="timeline full"></div></section>
+      </section>
+      <footer class="page-footer">NyayArchive 2.0 <span>·</span> Fictional college hackathon prototype <span>·</span> Not connected to a real court system</footer>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" aria-hidden="true"><section class="modal-box" id="modalBox" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></section></div>
+  <script src="app.js" defer></script>
+</body>
+</html>

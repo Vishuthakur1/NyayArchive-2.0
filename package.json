@@ -1,0 +1,16 @@
+{
+  "name": "nyayarchive-2-demo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Fictional court file tracking prototype for a college hackathon",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.22.3",
+    "mysql2": "^3.24.5",
+    "qrcode": "^1.5.4"
+  }
+}
